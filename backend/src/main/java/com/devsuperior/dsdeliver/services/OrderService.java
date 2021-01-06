@@ -25,7 +25,7 @@ public class OrderService {
 	@Autowired  
 	private ProductRepository productRepository;
 		
-	@Transactional(readOnly = true)  
+	@Transactional(readOnly = true)  //consulta no BD
 	public List<OrderDTO> findAll() {  
 
 		List<Order> list = repository.findOrdersWithProducts(); 
@@ -33,7 +33,7 @@ public class OrderService {
 		return list.stream().map(x -> new OrderDTO(x)).collect(Collectors.toList());   
 	}
 	
-	@Transactional  
+	@Transactional  //alteração no BD
 	public OrderDTO insert(OrderDTO dto) {
 		Order order = new Order(null, dto.getAddress(), dto.getLatitude(), dto.getLongitude(),
 				Instant.now(), OrderStatus.PENDING);
@@ -42,6 +42,14 @@ public class OrderService {
 			order.getProducts().add(product);   // intanciar uma entidade correspondente a cada dto
 		}
 		order = repository.save(order);   //salvar no BD
+		return new OrderDTO(order);
+	}
+	
+	@Transactional  //alteração no BD
+	public OrderDTO setDelivered(Long id) {
+		Order order = repository.getOne(id);  //instanciei sem mexer no BD
+		order.setStatus(OrderStatus.DELIVERED);
+		order = repository.save(order);   //agora que salva no BD
 		return new OrderDTO(order);
 	}
 }
